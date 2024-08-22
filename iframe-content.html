@@ -85,16 +85,21 @@
 
         // Listen for messages from the parent window to update the minimum bid
         window.addEventListener("message", function(event) {
-            if (event.origin !== "https://bcraig158.github.io") {
-                return;
-            }
-            const { minBid } = event.data;
-            if (minBid) {
-                const bidInput = document.getElementById("bid");
-                bidInput.min = minBid;
-                bidInput.value = minBid; // Automatically set the input value to the new minimum bid
-            }
-        }, false);
+    if (event.origin !== "https://bcraig158.github.io") {
+        return;
+    }
+
+    if (event.data.type === "updateBids") {
+        // Display the received bid data in the parent page
+        const bids = event.data.bids;
+        displayBids(bids); // Implement a function to display the bids in the parent page
+    }
+
+    if (event.data.type === "iframeLoaded") {
+        // Request bid data from the iframe
+        document.querySelector("iframe").contentWindow.postMessage({ type: "requestBids" }, "https://bcraig158.github.io");
+    }
+}, false);
 
         // Notify the parent window that the iframe has loaded
 window.addEventListener("load", function() {
