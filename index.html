@@ -198,7 +198,10 @@
                 content += `Time: ${bid.timestamp}\n\n`; // Display timestamp only
             });
 
-            document.getElementById("bids-text").innerText = content;
+            // Check if the bids-text element is within the iframe or the parent page
+            if (document.getElementById("bids-text")) {
+                document.getElementById("bids-text").innerText = content;
+            }
         }
 
         // Call updateBiddingHistory after ensuring DOM is fully loaded
@@ -209,6 +212,18 @@
             if (event.origin !== "https://bcraig158.github.io") {
                 return;
             }
+
+            // Handle bid data and update the bidding history
+            if (event.data.type === "updateBids") {
+                const bids = event.data.bids;
+                displayBids(bids); // Implement a function to display the bids in the parent page
+            }
+
+            // Request bid data from the iframe
+            if (event.data.type === "iframeLoaded") {
+                document.getElementById("bid-frame").contentWindow.postMessage({ type: "requestBids" }, "*");
+            }
+
             saveBid(event.data);
             updateBiddingHistory(); // Update the history immediately after receiving a new bid
         }, false);
