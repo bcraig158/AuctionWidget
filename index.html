@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Auction</title>
+</head>
+<body>
+    <h1>Live Auction: Bob Menery's TikTok Account with 5M+ Followers</h1>
+    
+    <blockquote>
+        <p>Current Highest Bid: $<span id="current-bid">10000</span></p>
+        <p>Minimum Bid Increase: $1000</p>
+        <p>Auction Ends In: <span id="countdown"></span></p>
+    </blockquote>
+
+    <blockquote>
+        <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 500px; border: none;"></iframe>
+    </blockquote>
+
+    <blockquote>
+        <input type="password" id="admin-pin" placeholder="Enter 8-digit PIN" maxlength="8">
+        <button onclick="revealData()">Reveal Bids</button>
+    </blockquote>
+
+    <div id="bids-container" style="display:none; margin-top: 20px;">
+        <h2>Stored Bids</h2>
+        <pre id="bids-text"></pre>
+    </div>
+
+    <script>
+        // Initialize the highest bid
+        let highestBid = 10000;
+
+        // Countdown Timer
+        const auctionEndTime = new Date("August 23, 2024 00:00:00 PST").getTime();
+
+        const countdownTimer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = auctionEndTime - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (distance < 0) {
+                clearInterval(countdownTimer);
+                document.getElementById("countdown").innerHTML = "Auction Ended";
+            }
+        }, 1000);
+
+        // Function to save the bid data to local storage and update the highest bid
+        function saveBid(event) {
+            const bidData = {
+                name: event.name,
+                email: event.email,
+                phone: event.phone,
+                bid: parseInt(event.bid)
+            };
+
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            bids.push(bidData);
+            localStorage.setItem('bids', JSON.stringify(bids));
+
+            // Update the highest bid
+            updateHighestBid(bidData.bid);
+
+            alert("Your bid has been saved successfully!");
+        }
+
+        // Function to update the highest bid and notify the iframe
+        function updateHighestBid(newBid) {
+            if (newBid > highestBid) {
+                highestBid = newBid;
+                document.getElementById("current-bid").innerText = highestBid;
+                updateIframeBidMin(highestBid + 1000);
+            }
+        }
+
+        // Function to update the iframe's minimum bid amount
+        function updateIframeBidMin(newMinBid) {
+            const iframe = document.getElementById("bid-frame").contentWindow;
+            iframe.postMessage({ minBid: newMinBid }, "https://bcraig158.github.io");
+        }
+
+        // Reveal the bid data only after correct PIN is entered
+        function revealData() {
+            const pin = document.getElementById("admin-pin").value;
+            const correctPin = "12345678";
+
+            if (pin !== correctPin) {
+                alert("Incorrect PIN. Access Denied.");
+                return;
+            }
+
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            let content = "Bids:\n\n";
+
+            bids.forEach((bid, index) => {
+                content += `Bid #${index + 1}\n`;
+                content += `Name: ${bid.name}\n`;
+                content += `Email: ${bid.email}\n`;
+                content += `Phone: ${bid.phone}\n`;
+                content += `Bid: $${bid.bid}\n\n`;
+            });
+
+            document.getElementById("bids-text").innerText = content;
+            document.getElementById("bids-container").style.display = "block";
+        }
+
+        // Initialize the current highest bid from existing data
+        function initializeHighestBid() {
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            if (bids.length > 0) {
+                highestBid = Math.max(...bids.map(bid => bid.bid));
+                document.getElementById("current-bid").innerText = highestBid;
+            }
+            updateIframeBidMin(highestBid + 1000);
+        }
+
+        // Set up the message listener to receive bid data from the iframe
+        window.addEventListener("message", function(event) {
+            if (event.origin !== "https://bcraig158.github.io") {
+                return;
+            }
+            saveBid(event.data);
+        }, false);
+
+        // Initialize the highest bid when the page loads
+        initializeHighestBid();
+    </script>
+</body>
+</html>
