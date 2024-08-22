@@ -54,11 +54,19 @@
 
         // Function to save the bid data to local storage and update the highest bid
         function saveBid(event) {
+            const newBid = parseInt(event.bid);
+
+            // Ensure the new bid is at least $1000 higher than the current highest bid
+            if (newBid <= highestBid) {
+                alert(`Your bid must be higher than the current highest bid of $${highestBid}`);
+                return;
+            }
+
             const bidData = {
                 name: event.name,
                 email: event.email,
                 phone: event.phone,
-                bid: parseInt(event.bid),
+                bid: newBid,
                 timestamp: new Date().toLocaleString() // Add timestamp here
             };
 
@@ -67,7 +75,7 @@
             localStorage.setItem('bids', JSON.stringify(bids));
 
             // Update the highest bid
-            updateHighestBid(bidData.bid);
+            updateHighestBid(newBid);
 
             alert("Your bid has been saved successfully!");
         }
@@ -106,7 +114,7 @@
                 content += `Email: ${bid.email}\n`;
                 content += `Phone: ${bid.phone}\n`;
                 content += `Bid: $${bid.bid}\n`;
-                content += `Time: ${bid.timestamp}\n\n`;
+                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp
             });
 
             document.getElementById("bids-text").innerText = content;
