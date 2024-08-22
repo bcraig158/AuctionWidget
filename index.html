@@ -147,9 +147,8 @@
             const newBid = parseInt(event.bid);
 
             // Ensure the new bid is at least $1000 higher than the current highest bid
-            if (newBid <= highestBid) {
-                alert(`Your bid must be higher than the current highest bid of $${highestBid}`);
-                return;
+            if (!event.bid || newBid <= highestBid) {
+                return; // Do nothing if bid is null or less than/equal to the current highest bid
             }
 
             const bidData = {
@@ -213,19 +212,12 @@
                 return;
             }
 
-            // Handle bid data and update the bidding history
-            if (event.data.type === "updateBids") {
-                const bids = event.data.bids;
-                displayBids(bids); // Implement a function to display the bids in the parent page
+            // Only process valid bid submissions
+            if (event.data && event.data.bid && event.data.name && event.data.email && event.data.phone) {
+                saveBid(event.data);
+                updateBiddingHistory(); // Update the history immediately after receiving a new bid
             }
 
-            // Request bid data from the iframe
-            if (event.data.type === "iframeLoaded") {
-                document.getElementById("bid-frame").contentWindow.postMessage({ type: "requestBids" }, "*");
-            }
-
-            saveBid(event.data);
-            updateBiddingHistory(); // Update the history immediately after receiving a new bid
         }, false);
 
         // Reveal the full bid data only after correct PIN is entered
@@ -262,14 +254,6 @@
             updateIframeBidMin(highestBid + 1000);
             updateBiddingHistory();
         }
-
-        // Set up the message listener to receive bid data from the iframe
-        window.addEventListener("message", function(event) {
-            if (event.origin !== "https://bcraig158.github.io") {
-                return;
-            }
-            saveBid(event.data);
-        }, false);
 
         // Initialize the highest bid and bidding history when the page loads
         initializeHighestBid();
