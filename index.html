@@ -58,7 +58,8 @@
                 name: event.name,
                 email: event.email,
                 phone: event.phone,
-                bid: parseInt(event.bid)
+                bid: parseInt(event.bid),
+                timestamp: new Date().toLocaleString() // Add timestamp here
             };
 
             let bids = JSON.parse(localStorage.getItem('bids')) || [];
@@ -104,7 +105,8 @@
                 content += `Name: ${bid.name}\n`;
                 content += `Email: ${bid.email}\n`;
                 content += `Phone: ${bid.phone}\n`;
-                content += `Bid: $${bid.bid}\n\n`;
+                content += `Bid: $${bid.bid}\n`;
+                content += `Time: ${bid.timestamp}\n\n`;
             });
 
             document.getElementById("bids-text").innerText = content;
