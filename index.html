@@ -92,16 +92,16 @@
         <p><strong>Bidding ends:</strong> 12:00am, Saturday 24 August 2024 (America/Phoenix)</p>
     </div>
 
+    <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 500px; border: none;"></iframe>
+
     <div class="bidding-history">
         <h2>Bidding History:</h2>
-        <pre id="bids-text">Enter the PIN to reveal the bids.</pre>
+        <pre id="bids-text">Enter the PIN to reveal the full bid details.</pre>
         <blockquote>
             <input type="password" id="admin-pin" placeholder="Enter 8-digit PIN" maxlength="8">
             <button onclick="revealData()">Reveal Bids</button>
         </blockquote>
     </div>
-
-    <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 500px; border: none;"></iframe>
 
     <script>
         // Initialize the highest bid
@@ -152,6 +152,9 @@
             // Update the highest bid
             updateHighestBid(newBid);
 
+            // Immediately update the visible bidding history
+            updateBiddingHistory();
+
             alert("Your bid has been saved successfully!");
         }
 
@@ -170,7 +173,20 @@
             iframe.postMessage({ minBid: newMinBid }, "https://bcraig158.github.io");
         }
 
-        // Reveal the bid data only after correct PIN is entered
+        // Function to update the bidding history display
+        function updateBiddingHistory() {
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            let content = "Bids:\n\n";
+
+            bids.forEach((bid, index) => {
+                content += `Bid: $${bid.bid}\n`;
+                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp only
+            });
+
+            document.getElementById("bids-text").innerText = content;
+        }
+
+        // Reveal the full bid data only after correct PIN is entered
         function revealData() {
             const pin = document.getElementById("admin-pin").value;
             const correctPin = "12345678";
@@ -185,7 +201,10 @@
 
             bids.forEach((bid, index) => {
                 content += `Bid: $${bid.bid}\n`;
-                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp only
+                content += `Time: ${bid.timestamp}\n`;
+                content += `Name: ${bid.name}\n`;
+                content += `Email: ${bid.email}\n`;
+                content += `Phone: ${bid.phone}\n\n`;
             });
 
             document.getElementById("bids-text").innerText = content;
@@ -199,6 +218,7 @@
                 document.getElementById("current-bid").innerText = highestBid;
             }
             updateIframeBidMin(highestBid + 1000);
+            updateBiddingHistory();
         }
 
         // Set up the message listener to receive bid data from the iframe
@@ -209,8 +229,9 @@
             saveBid(event.data);
         }, false);
 
-        // Initialize the highest bid when the page loads
+        // Initialize the highest bid and bidding history when the page loads
         initializeHighestBid();
     </script>
 </body>
 </html>
+
