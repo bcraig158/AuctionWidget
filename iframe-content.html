@@ -69,8 +69,9 @@
             }
             const { minBid } = event.data;
             if (minBid) {
-                document.getElementById("bid").min = minBid;
-                document.getElementById("bid").value = minBid;
+                const bidInput = document.getElementById("bid");
+                bidInput.min = minBid;
+                bidInput.value = minBid; // Automatically set the input value to the new minimum bid
             }
         }, false);
     </script>
