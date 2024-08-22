@@ -62,8 +62,14 @@
                 name: document.getElementById("name").value,
                 email: document.getElementById("email").value,
                 phone: document.getElementById("phone").value,
-                bid: document.getElementById("bid").value
+                bid: parseInt(document.getElementById("bid").value)
             };
+
+            // Validate bid amount before storing and sending
+            if (bidData.bid < parseInt(document.getElementById("bid").min)) {
+                alert(`Your bid must be at least $${document.getElementById("bid").min}.`);
+                return;
+            }
 
             // Store the bid data in localStorage
             let bids = JSON.parse(localStorage.getItem('bids')) || [];
@@ -104,4 +110,3 @@
     </script>
 </body>
 </html>
-
