@@ -57,47 +57,38 @@
 
     <script>
     function submitBid(event) {
-        event.preventDefault();
+    event.preventDefault();
+    const bidData = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        bid: parseInt(document.getElementById("bid").value)
+    };
 
-        const bidData = {
-            name: document.getElementById("name").value,
-            email: document.getElementById("email").value,
-            phone: document.getElementById("phone").value,
-            bid: parseInt(document.getElementById("bid").value)
-        };
+    console.log("Submitting bid:", bidData); // Log the bid data before sending
 
-        console.log("Submitting bid:", bidData); // Debugging statement
-
-        // Validate bid amount before storing and sending
-        if (bidData.bid < parseInt(document.getElementById("bid").min)) {
-            alert(`Your bid must be at least $${document.getElementById("bid").min}.`);
-            return;
+    fetch("https://bid-apisprouter.glitch.me/submit-bid", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(bidData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
         }
-
-        // Send the bid data to the API for persistent storage
-        fetch("https://bid-apisprouter.glitch.me/submit-bid", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(bidData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error submitting bid: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Bid submission response:", data); // Debugging statement
-            alert(data.message);
-            updateParentWithBidData(); // Update the parent with the latest bid data
-        })
-        .catch(error => {
-            console.error("Error:", error); // Log the error to the console
-            alert("There was an error submitting your bid. Please try again later.");
-        });
-    }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Server response:", data); // Log the server response
+        alert(data.message);
+    })
+    .catch(error => {
+        console.error("Error:", error); // Log any errors that occur
+        alert("There was an error submitting your bid. Please try again later.");
+    });
+}
 
     // Listen for messages from the parent window to update the minimum bid
     window.addEventListener("message", function(event) {
