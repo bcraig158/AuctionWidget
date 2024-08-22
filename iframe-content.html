@@ -56,67 +56,79 @@
     </div>
 
     <script>
-        function submitBid(event) {
-            event.preventDefault();
-            const bidData = {
-                name: document.getElementById("name").value,
-                email: document.getElementById("email").value,
-                phone: document.getElementById("phone").value,
-                bid: parseInt(document.getElementById("bid").value)
-            };
+    function submitBid(event) {
+        event.preventDefault();
+        const bidData = {
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            phone: document.getElementById("phone").value,
+            bid: parseInt(document.getElementById("bid").value)
+        };
 
-            // Validate bid amount before storing and sending
-            if (bidData.bid < parseInt(document.getElementById("bid").min)) {
-                alert(`Your bid must be at least $${document.getElementById("bid").min}.`);
-                return;
-            }
+        // Validate bid amount before sending
+        if (bidData.bid < parseInt(document.getElementById("bid").min)) {
+            alert(`Your bid must be at least $${document.getElementById("bid").min}.`);
+            return;
+        }
 
-            // Store the bid data in localStorage
-            let bids = JSON.parse(localStorage.getItem('bids')) || [];
-            bids.push(bidData);
-            localStorage.setItem('bids', JSON.stringify(bids));
-
-            // Send the bid data to the parent window
-            window.parent.postMessage({ type: "newBid", bid: bidData }, "*");
-
-            alert("Bid submitted successfully!");
+        // Send the bid data to the API
+        fetch("https://bid-apisprouter.glitch.me/submit-bid", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(bidData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
             updateParentWithBidData(); // Update the parent with the latest bid data
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
+
+    // Listen for messages from the parent window to update the minimum bid
+    window.addEventListener("message", function(event) {
+        if (event.origin !== "https://bcraig158.github.io") {
+            return;
         }
 
-        // Listen for messages from the parent window to update the minimum bid
-        window.addEventListener("message", function(event) {
-    if (event.origin !== "https://bcraig158.github.io") {
-        return;
-    }
+        if (event.data.type === "updateBids") {
+            // Display the received bid data in the parent page
+            const bids = event.data.bids;
+            displayBids(bids); // Implement a function to display the bids in the parent page
+        }
 
-    if (event.data.type === "updateBids") {
-        // Display the received bid data in the parent page
-        const bids = event.data.bids;
-        displayBids(bids); // Implement a function to display the bids in the parent page
-    }
+        if (event.data.type === "iframeLoaded") {
+            // Request bid data from the iframe
+            document.querySelector("iframe").contentWindow.postMessage({ type: "requestBids" }, "https://bcraig158.github.io");
+        }
+    }, false);
 
-    if (event.data.type === "iframeLoaded") {
-        // Request bid data from the iframe
-        document.querySelector("iframe").contentWindow.postMessage({ type: "requestBids" }, "https://bcraig158.github.io");
-    }
-}, false);
-
-        // Notify the parent window that the iframe has loaded
-window.addEventListener("load", function() {
-    const allowedOrigins = ["https://sprouter.app", "https://spro.me", "https://spro.biz", "https://spro.vip"];
-    
-    allowedOrigins.forEach(function(origin) {
-        window.parent.postMessage({ type: "iframeLoaded" }, origin);
+    // Notify the parent window that the iframe has loaded
+    window.addEventListener("load", function() {
+        const allowedOrigins = ["https://sprouter.app", "https://spro.me", "https://spro.biz", "https://spro.vip"];
+        
+        allowedOrigins.forEach(function(origin) {
+            window.parent.postMessage({ type: "iframeLoaded" }, origin);
+        });
+        
+        updateParentWithBidData(); // Send the initial bid data to the parent
     });
-    
-    updateParentWithBidData(); // Send the initial bid data to the parent
-});
 
-        // Function to send bid data to the parent
-        function updateParentWithBidData() {
-            let bids = JSON.parse(localStorage.getItem('bids')) || [];
-            window.parent.postMessage({ type: "updateBids", bids: bids }, "*");
-        }
-    </script>
+    // Function to send bid data to the parent
+    function updateParentWithBidData() {
+        fetch("https://bid-apisprouter.glitch.me/retrieve-bids")
+        .then(response => response.json())
+        .then(data => {
+            window.parent.postMessage({ type: "updateBids", bids: data }, "*");
+        })
+        .catch(error => {
+            console.error("Error fetching bids:", error);
+        });
+    }
+</script>
 </body>
 </html>
