@@ -121,116 +121,133 @@
     </div>
 
     <script>
-    // Initialize the highest bid
-    let highestBid = 10000;
+        // Initialize the highest bid
+        let highestBid = 10000;
 
-    // Countdown Timer
-    const auctionEndTime = new Date("August 23, 2024 00:00:00 PST").getTime();
+        // Countdown Timer
+        const auctionEndTime = new Date("August 23, 2024 00:00:00 PST").getTime();
 
-    const countdownTimer = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = auctionEndTime - now;
+        const countdownTimer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = auctionEndTime - now;
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
-        if (distance < 0) {
-            clearInterval(countdownTimer);
-            document.getElementById("countdown").innerHTML = "Auction Ended";
-        }
-    }, 1000);
+            if (distance < 0) {
+                clearInterval(countdownTimer);
+                document.getElementById("countdown").innerHTML = "Auction Ended";
+            }
+        }, 1000);
 
-    // Function to save the bid data and update the highest bid
-    function saveBid(event) {
-        const newBid = parseInt(event.bid);
+        // Function to save the bid data to local storage and update the highest bid
+        function saveBid(event) {
+            const newBid = parseInt(event.bid);
 
-        // Ensure the new bid is at least $1000 higher than the current highest bid
-        if (!event.bid || newBid <= highestBid) {
-            return; // Do nothing if bid is null or less than/equal to the current highest bid
-        }
+            // Ensure the new bid is at least $1000 higher than the current highest bid
+            if (!event.bid || newBid <= highestBid) {
+                return; // Do nothing if bid is null or less than/equal to the current highest bid
+            }
 
-        const bidData = {
-            name: event.name,
-            email: event.email,
-            phone: event.phone,
-            bid: newBid,
-            timestamp: new Date().toLocaleString() // Add timestamp here
-        };
+            const bidData = {
+                name: event.name,
+                email: event.email,
+                phone: event.phone,
+                bid: newBid,
+                timestamp: new Date().toLocaleString() // Add timestamp here
+            };
 
-        // Send the bid data to the API for persistent storage
-        fetch("https://bid-apisprouter.glitch.me/submit-bid", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(bidData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            bids.push(bidData);
+            localStorage.setItem('bids', JSON.stringify(bids));
+
+            // Update the highest bid
             updateHighestBid(newBid);
-            updateBiddingHistory(); // Update history after saving the bid
-        })
-        .catch(error => {
-            console.error("Error saving bid:", error);
-        });
-    }
 
-    // Function to update the highest bid and notify the iframe
-    function updateHighestBid(newBid) {
-        if (newBid > highestBid) {
-            highestBid = newBid;
-            document.getElementById("current-bid").innerText = highestBid;
-            updateIframeBidMin(highestBid + 1000);
+            // Immediately update the visible bidding history
+            updateBiddingHistory();
 
-            // Send the updated bid to the parent window if embedded
-            if (window.parent !== window) {
-                window.parent.postMessage({ type: "updateBids", bids: JSON.parse(localStorage.getItem('bids')) }, "*");
+            alert("Your bid has been saved successfully!");
+        }
+
+        // Function to update the highest bid and notify the iframe
+        function updateHighestBid(newBid) {
+            if (newBid > highestBid) {
+                highestBid = newBid;
+                document.getElementById("current-bid").innerText = highestBid;
+                updateIframeBidMin(highestBid + 1000);
+
+                // Update the input field with the new minimum bid
+                document.getElementById("bid").value = highestBid + 1000;
+                document.getElementById("bid").min = highestBid + 1000;
+
+                // Send the updated bid to the parent window if embedded
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: "updateBids", bids: JSON.parse(localStorage.getItem('bids')) }, "*");
+                }
             }
         }
-    }
 
-    // Function to update the iframe's minimum bid amount
-    function updateIframeBidMin(newMinBid) {
-        const iframe = document.getElementById("bid-frame").contentWindow;
-        iframe.postMessage({ minBid: newMinBid }, "https://bcraig158.github.io");
-    }
+        // Function to update the iframe's minimum bid amount
+        function updateIframeBidMin(newMinBid) {
+            const iframe = document.getElementById("bid-frame").contentWindow;
+            iframe.postMessage({ minBid: newMinBid }, "https://bcraig158.github.io");
+        }
 
-    // Function to update the bidding history display
-    function updateBiddingHistory() {
-        fetch("https://bid-apisprouter.glitch.me/retrieve-bids")
-        .then(response => response.json())
-        .then(bids => {
+        // Function to update the bidding history display
+        function updateBiddingHistory() {
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
             let content = "Bids:\n\n";
-            bids.forEach(bid => {
+
+            bids.forEach((bid, index) => {
                 content += `Bid: $${bid.bid}\n`;
-                content += `Time: ${new Date(bid.timestamp).toLocaleString()}\n\n`;
+                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp only
             });
-            document.getElementById("bids-text").innerText = content;
-        })
-        .catch(error => {
-            console.error("Error fetching bids:", error);
+
+            // Check if the bids-text element is within the iframe or the parent page
+            if (document.getElementById("bids-text")) {
+                document.getElementById("bids-text").innerText = content;
+            }
+        }
+
+        // Call updateBiddingHistory after ensuring DOM is fully loaded
+        window.addEventListener('load', function () {
+            // Fetch the latest bids when the page loads
+            fetch("https://bid-apisprouter.glitch.me/retrieve-bids")
+                .then(response => response.json())
+                .then(data => {
+                    const highestBidFromServer = Math.max(...data.map(bid => bid.bid), 0);
+                    highestBid = highestBidFromServer;
+
+                    // Set the initial value of the bid input field
+                    document.getElementById("bid").value = highestBid + 1000;
+                    document.getElementById("bid").min = highestBid + 1000;
+
+                    updateHighestBid(highestBid);
+                    updateBiddingHistory();
+                })
+                .catch(error => {
+                    console.error("Error fetching bids:", error);
+                });
         });
-    }
 
-    // Call updateBiddingHistory after ensuring DOM is fully loaded
-    window.addEventListener('load', updateBiddingHistory);
+        // Set up the message listener to receive bid data from the iframe
+        window.addEventListener("message", function (event) {
+            if (event.origin !== "https://bcraig158.github.io") {
+                return;
+            }
 
-    // Set up the message listener to receive bid data from the iframe
-    window.addEventListener("message", function(event) {
-        if (event.origin !== "https://bcraig158.github.io") {
-            return;
-        }
+            // Only process valid bid submissions
+            if (event.data && event.data.bid && event.data.name && event.data.email && event.data.phone) {
+                saveBid(event.data);
+                updateBiddingHistory(); // Update the history immediately after receiving a new bid
+            }
 
-        // Only process valid bid submissions
-        if (event.data && event.data.bid && event.data.name && event.data.email && event.data.phone) {
-            saveBid(event.data);
-        }
-    }, false);
+        }, false);
 
     // Reveal the full bid data only after correct PIN is entered
     function revealData() {
