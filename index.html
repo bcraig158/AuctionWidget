@@ -3,30 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Auction</title>
+    <title>Bob Menery Tiktok Auction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: black;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .auction-info {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background-color: #ddd;
+            border-bottom: 1px solid #ccc;
+        }
+        .auction-info div {
+            text-align: center;
+            font-size: 18px;
+        }
+        .auction-description {
+            padding: 20px;
+            background-color: white;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .auction-description h2 {
+            margin-top: 0;
+            font-size: 22px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .bidding-history {
+            padding: 20px;
+            background-color: white;
+            margin: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .bidding-history h2 {
+            margin-top: 0;
+            font-size: 22px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .bidding-history pre {
+            font-size: 16px;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 <body>
-    <h1>Live Auction: Bob Menery's TikTok Account with 5M+ Followers</h1>
-    
-    <blockquote>
-        <p>Current Highest Bid: $<span id="current-bid">10000</span></p>
-        <p>Minimum Bid Increase: $1000</p>
-        <p>Auction Ends In: <span id="countdown"></span></p>
-    </blockquote>
+    <header>
+        Bob Menery Tiktok Auction
+    </header>
 
-    <blockquote>
-        <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 500px; border: none;"></iframe>
-    </blockquote>
-
-    <blockquote>
-        <input type="password" id="admin-pin" placeholder="Enter 8-digit PIN" maxlength="8">
-        <button onclick="revealData()">Reveal Bids</button>
-    </blockquote>
-
-    <div id="bids-container" style="display:none; margin-top: 20px;">
-        <h2>Stored Bids</h2>
-        <pre id="bids-text"></pre>
+    <div class="auction-info">
+        <div>
+            <p>Time Remaining:</p>
+            <p id="countdown">Loading...</p>
+        </div>
+        <div>
+            <p>Current Highest Bid:</p>
+            <p>$<span id="current-bid">10000</span></p>
+        </div>
     </div>
+
+    <div class="auction-description">
+        <h2>About this Auction:</h2>
+        <p>
+            After a legendary golf meltdown, Bob Menery is putting his TikTok page up for grabs! 
+            Estimated at a jaw-dropping $500k, this is your chance to own a piece of internet comedy history. 
+            High-profile bidders are already in, but Bob's opening it up to the public to raise the stakes even higher. 
+            Who will walk away with the prize? Bid now to find out—and remember, it’s all fun and games until the final bid comes in! 
+            Get ready to laugh your way to the top!
+        </p>
+        <p><strong>Value:</strong> $500,000</p>
+        <p><strong>Bidding ends:</strong> 12:00am, Saturday 24 August 2024 (America/Phoenix)</p>
+    </div>
+
+    <div class="bidding-history">
+        <h2>Bidding History:</h2>
+        <pre id="bids-text">Enter the PIN to reveal the bids.</pre>
+        <blockquote>
+            <input type="password" id="admin-pin" placeholder="Enter 8-digit PIN" maxlength="8">
+            <button onclick="revealData()">Reveal Bids</button>
+        </blockquote>
+    </div>
+
+    <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 500px; border: none;"></iframe>
 
     <script>
         // Initialize the highest bid
@@ -109,16 +184,11 @@
             let content = "Bids:\n\n";
 
             bids.forEach((bid, index) => {
-                content += `Bid #${index + 1}\n`;
-                content += `Name: ${bid.name}\n`;
-                content += `Email: ${bid.email}\n`;
-                content += `Phone: ${bid.phone}\n`;
                 content += `Bid: $${bid.bid}\n`;
-                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp
+                content += `Time: ${bid.timestamp}\n\n`; // Display timestamp only
             });
 
             document.getElementById("bids-text").innerText = content;
-            document.getElementById("bids-container").style.display = "block";
         }
 
         // Initialize the current highest bid from existing data
