@@ -97,10 +97,15 @@
         }, false);
 
         // Notify the parent window that the iframe has loaded
-        window.addEventListener("load", function() {
-            window.parent.postMessage({ type: "iframeLoaded" }, "*");
-            updateParentWithBidData(); // Send the initial bid data to the parent
-        });
+window.addEventListener("load", function() {
+    const allowedOrigins = ["https://sprouter.app", "https://spro.me", "https://spro.biz", "https://spro.vip"];
+    
+    allowedOrigins.forEach(function(origin) {
+        window.parent.postMessage({ type: "iframeLoaded" }, origin);
+    });
+    
+    updateParentWithBidData(); // Send the initial bid data to the parent
+});
 
         // Function to send bid data to the parent
         function updateParentWithBidData() {
