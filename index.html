@@ -56,7 +56,12 @@
             max-height: 200px;
         }
         iframe#bid-frame {
-            margin-top: 10px;  /* Reduced margin for less space above the iframe */
+            margin-top: 0;  /* Remove the margin above the iframe */
+        }
+        .bidding-history {
+            margin-top: 0; /* Remove the margin above the bidding history */
+            padding-top: 10px; /* Reduce padding inside the bidding history section */
+            padding-bottom: 10px; /* Reduce padding inside the bidding history section */
         }
         button {
             background-color: #0288D1;
@@ -72,7 +77,6 @@
         }
     </style>
 </head>
-
 <body>
     <header>
         Bob Menery Tiktok Auction
@@ -103,7 +107,7 @@
     </div>
 
     <!-- Updated iframe section -->
-    <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 550px; border: none; margin-top: 10px;"></iframe>
+    <iframe id="bid-frame" src="https://bcraig158.github.io/AuctionWidget/iframe-content.html" style="width: 100%; height: 550px; border: none; margin-top: 0;"></iframe>
 
     <div class="bidding-history">
         <h2>Bidding History:</h2>
@@ -196,6 +200,18 @@
 
             document.getElementById("bids-text").innerText = content;
         }
+
+        // Call updateBiddingHistory after ensuring DOM is fully loaded
+        window.addEventListener('load', updateBiddingHistory);
+
+        // Set up the message listener to receive bid data from the iframe
+        window.addEventListener("message", function(event) {
+            if (event.origin !== "https://bcraig158.github.io") {
+                return;
+            }
+            saveBid(event.data);
+            updateBiddingHistory(); // Update the history immediately after receiving a new bid
+        }, false);
 
         // Reveal the full bid data only after correct PIN is entered
         function revealData() {
