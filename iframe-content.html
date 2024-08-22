@@ -61,6 +61,18 @@
             window.parent.postMessage(bidData, "*");
             alert("Bid submitted successfully!");
         }
+
+        // Listen for messages from the parent window to update the minimum bid
+        window.addEventListener("message", function(event) {
+            if (event.origin !== "https://bcraig158.github.io") {
+                return;
+            }
+            const { minBid } = event.data;
+            if (minBid) {
+                document.getElementById("bid").min = minBid;
+                document.getElementById("bid").value = minBid;
+            }
+        }, false);
     </script>
 </body>
 </html>
