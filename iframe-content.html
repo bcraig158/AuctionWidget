@@ -65,8 +65,16 @@
                 bid: document.getElementById("bid").value
             };
 
-            window.parent.postMessage(bidData, "*");
+            // Store the bid data in localStorage
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            bids.push(bidData);
+            localStorage.setItem('bids', JSON.stringify(bids));
+
+            // Send the bid data to the parent window
+            window.parent.postMessage({ type: "newBid", bid: bidData }, "*");
+
             alert("Bid submitted successfully!");
+            updateParentWithBidData(); // Update the parent with the latest bid data
         }
 
         // Listen for messages from the parent window to update the minimum bid
@@ -81,6 +89,18 @@
                 bidInput.value = minBid; // Automatically set the input value to the new minimum bid
             }
         }, false);
+
+        // Notify the parent window that the iframe has loaded
+        window.addEventListener("load", function() {
+            window.parent.postMessage({ type: "iframeLoaded" }, "*");
+            updateParentWithBidData(); // Send the initial bid data to the parent
+        });
+
+        // Function to send bid data to the parent
+        function updateParentWithBidData() {
+            let bids = JSON.parse(localStorage.getItem('bids')) || [];
+            window.parent.postMessage({ type: "updateBids", bids: bids }, "*");
+        }
     </script>
 </body>
 </html>
