@@ -58,6 +58,7 @@
     <script>
     function submitBid(event) {
     event.preventDefault();
+
     const bidData = {
         name: document.getElementById("name").value,
         email: document.getElementById("email").value,
@@ -65,29 +66,51 @@
         bid: parseInt(document.getElementById("bid").value)
     };
 
-    console.log("Submitting bid:", bidData); // Log the bid data before sending
+    console.log("Submitting bid:", bidData); // Debugging statement
 
-    fetch("https://bid-apisprouter.glitch.me/submit-bid", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(bidData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log("Server response:", data); // Log the server response
-        alert(data.message);
-    })
-    .catch(error => {
-        console.error("Error:", error); // Log any errors that occur
-        alert("There was an error submitting your bid. Please try again later.");
-    });
+    // Validate bid amount before storing and sending
+    if (bidData.bid < parseInt(document.getElementById("bid").min)) {
+        alert(`Your bid must be at least $${document.getElementById("bid").min}.`);
+        return;
+    }
+
+    // Fetch the current highest bid from the server before submission
+    fetch("https://bid-apisprouter.glitch.me/retrieve-bids")
+        .then(response => response.json())
+        .then(data => {
+            const highestBid = Math.max(...data.map(bid => bid.bid), 0);
+
+            if (bidData.bid <= highestBid) {
+                alert(`Your bid must be higher than the current highest bid of $${highestBid}.`);
+                return;
+            }
+
+            // Send the bid data to the API for persistent storage
+            return fetch("https://bid-apisprouter.glitch.me/submit-bid", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(bidData)
+            });
+        })
+        .then(response => {
+            if (response && !response.ok) {
+                throw new Error(`Error submitting bid: ${response.statusText}`);
+            }
+            return response ? response.json() : null;
+        })
+        .then(data => {
+            if (data) {
+                console.log("Bid submission response:", data); // Debugging statement
+                alert(data.message);
+                updateParentWithBidData(); // Update the parent with the latest bid data
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error); // Log the error to the console
+            alert("There was an error submitting your bid. Please try again later.");
+        });
 }
 
     // Listen for messages from the parent window to update the minimum bid
