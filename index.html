@@ -175,13 +175,18 @@
         }
 
         // Function to update the highest bid and notify the iframe
-        function updateHighestBid(newBid) {
-            if (newBid > highestBid) {
-                highestBid = newBid;
-                document.getElementById("current-bid").innerText = highestBid;
-                updateIframeBidMin(highestBid + 1000);
-            }
+function updateHighestBid(newBid) {
+    if (newBid > highestBid) {
+        highestBid = newBid;
+        document.getElementById("current-bid").innerText = highestBid;
+        updateIframeBidMin(highestBid + 1000);
+
+        // Send the updated bid to the parent window if embedded
+        if (window.parent !== window) {
+            window.parent.postMessage({ type: "updateBids", bids: JSON.parse(localStorage.getItem('bids')) }, "*");
         }
+    }
+}
 
         // Function to update the iframe's minimum bid amount
         function updateIframeBidMin(newMinBid) {
@@ -247,15 +252,17 @@
         }
 
         // Initialize the current highest bid from existing data
-        function initializeHighestBid() {
-            let bids = JSON.parse(localStorage.getItem('bids')) || [];
-            if (bids.length > 0) {
-                highestBid = Math.max(...bids.map(bid => bid.bid));
-                document.getElementById("current-bid").innerText = highestBid;
-            }
-            updateIframeBidMin(highestBid + 1000);
-            updateBiddingHistory();
-        }
+function initializeHighestBid() {
+    let bids = JSON.parse(localStorage.getItem('bids')) || [];
+    if (bids.length > 0) {
+        highestBid = Math.max(...bids.map(bid => bid.bid));
+        document.getElementById("current-bid").innerText = highestBid;
+    } else {
+        document.getElementById("current-bid").innerText = highestBid;
+    }
+    updateIframeBidMin(highestBid + 1000);
+    updateBiddingHistory();
+}
 
         // Initialize the highest bid and bidding history when the page loads
         initializeHighestBid();
