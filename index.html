@@ -13,45 +13,46 @@
             color: #333;
         }
         header {
-            background-color: black;
+            background-color: #222;
             color: white;
             padding: 20px;
             text-align: center;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
         }
         .auction-info {
             display: flex;
             justify-content: space-around;
             padding: 20px;
-            background-color: #ddd;
-            border-bottom: 1px solid #ccc;
+            background-color: #455A64;
+            color: white;
         }
         .auction-info div {
             text-align: center;
             font-size: 18px;
+            background-color: #607D8B;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 30%;
         }
-        .auction-description {
+        .auction-info div p {
+            margin: 10px 0;
+        }
+        .auction-info div span {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .auction-description, .bidding-history {
             padding: 20px;
             background-color: white;
             margin: 20px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .auction-description h2 {
-            margin-top: 0;
-            font-size: 22px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-        }
-        .bidding-history {
-            padding: 20px;
-            background-color: white;
-            margin: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .bidding-history h2 {
+        .auction-description h2, .bidding-history h2 {
             margin-top: 0;
             font-size: 22px;
             border-bottom: 2px solid #333;
@@ -60,6 +61,18 @@
         .bidding-history pre {
             font-size: 16px;
             white-space: pre-wrap;
+        }
+        button {
+            background-color: #0288D1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0277BD;
         }
     </style>
 </head>
@@ -71,11 +84,11 @@
     <div class="auction-info">
         <div>
             <p>Time Remaining:</p>
-            <p id="countdown">Loading...</p>
+            <span id="countdown">Loading...</span>
         </div>
         <div>
             <p>Current Highest Bid:</p>
-            <p>$<span id="current-bid">10000</span></p>
+            <span>$<span id="current-bid">10000</span></span>
         </div>
     </div>
 
@@ -234,4 +247,5 @@
     </script>
 </body>
 </html>
+
 
